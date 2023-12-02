@@ -8,6 +8,9 @@ class Draw:
     r: int
     g: int
 
+    def power(self):
+        return self.b * self.r * self.g
+
 
 @attrs.define
 class Game:
@@ -76,7 +79,7 @@ def is_draw_possible(draw: Draw, target: Game) -> bool:
     return True
 
 
-if __name__ == '__main__':
+def puzzle_a():
     with open("input.txt") as f:
         lines = f.readlines()
 
@@ -87,3 +90,34 @@ if __name__ == '__main__':
     total = sum(game.number for game in possible_games)
 
     print(total)
+
+
+def smallest_possible_draw(game: Game) -> Draw:
+    smallest_draw = Draw(r=0, g=0, b=0)
+    for draw in game.draws:
+        if draw.r > smallest_draw.r:
+            smallest_draw.r = draw.r
+
+        if draw.g > smallest_draw.g:
+            smallest_draw.g = draw.g
+
+        if draw.b > smallest_draw.b:
+            smallest_draw.b = draw.b
+
+    return smallest_draw
+
+
+def puzzle_b():
+    with open("input.txt") as f:
+        lines = f.readlines()
+
+    games = [parse_game(line) for line in lines]
+
+    smallest_draws = [smallest_possible_draw(game) for game in games]
+    total = sum(smallest_draw.power() for smallest_draw in smallest_draws)
+    print(total)
+
+
+if __name__ == '__main__':
+    puzzle_a()
+    puzzle_b()
