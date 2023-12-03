@@ -2,30 +2,45 @@ import re
 import attrs
 
 
-def puzzle_a(lines: list[str]) -> list[list[int]]:
-    part_numbers = []
+@attrs.define
+class Part:
+    symbols: list["Symbol"] = attrs.Factory(list)
+    number: int | None = None
+
+
+@attrs.define
+class Symbol:
+    value: str
+    coords: tuple[int, int]
+
+
+def puzzle_a(lines: list[str]) -> list[list[Part]]:
+    parts = []
 
     number = ""
-    is_part_number = False
-
+    part = Part()
     for y, line in enumerate(lines):
-        line_part_numbers = []
+        line_parts = []
         for x, char in enumerate(line):
             if char.isdigit():
                 number = number + char
-                is_part_number = is_part_number or is_next_to_symbol(lines, (x, y))
+                symbol = adjacent_symbol(lines, (x, y))
+                if symbol is not None:
+                    part.symbols.append(symbol)
+
             elif len(number) > 0:
                 # We've reached the end of a number. Add it to the pile and reset counters.
-                if is_part_number:
-                    line_part_numbers.append(int(number))
+                part.number = int(number)
+                if part.symbols:
+                    line_parts.append(part)
                 number = ""
-                is_part_number = False
-        part_numbers.append(line_part_numbers)
+                part = Part()
+        parts.append(line_parts)
 
-    return part_numbers
+    return parts
 
 
-def is_next_to_symbol(lines: list[str], x_y: [int, int]) -> bool:
+def adjacent_symbol(lines: list[str], x_y: [int, int]) -> Symbol | None:
     for offset_y in [-1, 0, 1]:
         search_y = x_y[1] + offset_y
         if search_y < 0 or search_y >= len(lines):
@@ -42,9 +57,9 @@ def is_next_to_symbol(lines: list[str], x_y: [int, int]) -> bool:
 
             char = lines[search_y][search_x]
             if char not in (".", "\n") and re.match(r"\D", char):
-                return True
+                return Symbol(value=char, coords=(search_x, search_y))
 
-    return False
+    return None
 
 
 if __name__ == '__main__':
@@ -52,4 +67,4 @@ if __name__ == '__main__':
         lines = f.readlines()
         part_numbers = puzzle_a(lines)
 
-        print(sum(num for line in part_numbers for num in line))
+        print(sum(part.number for line in part_numbers for part in line))
