@@ -1,5 +1,6 @@
 import re
 import attrs
+import copy
 
 
 @attrs.define
@@ -9,21 +10,24 @@ class Card:
     my_numbers: list[int]
 
     def points(self) -> int:
-        intersection = set(self.winning_numbers).intersection(self.my_numbers)
-        if len(intersection) == 0:
+        num_matches = self.num_matches()
+        if num_matches == 0:
             return 0
         else:
-            return 2 ** (len(intersection) - 1)
+            return 2 ** (num_matches - 1)
+
+    def num_matches(self):
+        return len(set(self.winning_numbers).intersection(self.my_numbers))
 
 
 def puzzle_a(input_text: str) -> int:
-    lines = input_text.splitlines()
-    cards = []
-    for line in lines:
-        card = parse_card(line)
-        cards.append(card)
-
+    cards = parse_cards(input_text)
     return sum(card.points() for card in cards)
+
+
+def parse_cards(input_text: str) -> list[Card]:
+    lines = input_text.splitlines()
+    return [parse_card(line) for line in lines]
 
 
 def parse_card(line: str) -> Card:
@@ -36,7 +40,22 @@ def parse_card(line: str) -> Card:
     return Card(number=number, winning_numbers=winning_numbers, my_numbers=my_numbers)
 
 
+def puzzle_b(input_text: str) -> int:
+    cards = parse_cards(input_text)
+
+    num_cards = 0
+    for card in cards:
+        num_matches = card.num_matches()
+        i = card.number
+        for card_to_copy in cards[i : i + num_matches]:
+            cards.append(copy.deepcopy(card_to_copy))
+        num_cards += 1
+
+    return num_cards
+
+
 if __name__ == "__main__":
     with open("input.txt") as f:
         input_text = f.read()
     print(puzzle_a(input_text))
+    print(puzzle_b(input_text))
