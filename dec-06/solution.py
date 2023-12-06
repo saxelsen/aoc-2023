@@ -12,9 +12,11 @@ if __name__ == "__main__":
 
     time_title, time_str = lines[0].split(":")
     times = [int(time) for time in time_str.split()]
+    adjusted_time = int("".join(time_str.split()))
 
     distance_title, distance_str = lines[1].split(":")
     distances = [int(distance) for distance in distance_str.split()]
+    adjusted_distance = int("".join(distance_str.split()))
 
     permutations = 1
     for time, distance in zip(times, distances):
@@ -22,3 +24,7 @@ if __name__ == "__main__":
         ways_to_win = hold_range[1] + 1 - hold_range[0]
         permutations *= ways_to_win
     print(permutations)
+
+    adjusted_range = hold_times(adjusted_time, adjusted_distance)
+    adjusted_ways_to_win = adjusted_range[1] + 1 - adjusted_range[0]
+    print(adjusted_ways_to_win)
