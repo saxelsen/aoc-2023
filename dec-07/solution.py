@@ -10,7 +10,7 @@ def card_value(c):
         if c == "T":
             c_num = 10
         elif c == "J":
-            c_num = 11
+            c_num = 1
         elif c == "Q":
             c_num = 12
         elif c == "K":
@@ -35,19 +35,30 @@ def compare_card(c1, c2) -> int:
 
 
 def type(hand):
-    max_same = max(hand["counts"].values())
+    hand["counts"] = Counter(hand["cards"])
+
+    jokers = hand["counts"].get("J", 0)
+    sorted_cards = sorted(list(hand["counts"].keys()), key=lambda x: -(hand["counts"][x]))
+    max_card = sorted_cards[0]
+    if max_card == "J" and len(sorted_cards) > 1:
+        max_card = sorted_cards[1]
+
+    if max_card != "J":
+        hand["counts"][max_card] += jokers
+
+    max_same = hand["counts"][max_card]
 
     if max_same == 5:
         return 7
     elif max_same == 4:
         return 6
     elif max_same == 3:
-        if 2 in hand["counts"].values():
+        if 2 in hand["counts"].values() and jokers != 2:
             return 5
         return 4
     elif max_same == 2:
         num_pairs = Counter(hand["counts"].values())[2]
-        if num_pairs == 2:
+        if num_pairs == 2 and jokers != 2:
             return 3
         return 2
     else:
@@ -75,7 +86,6 @@ if __name__ == '__main__':
 
         hand = {"cards": cards, "bid": bid}
         hand["raw"] = line
-        hand["counts"] = Counter(hand["cards"])
         hand["type"] = type(hand)
         bisect.insort(hands, hand, key=cmp_to_key(compare_hand))
 
